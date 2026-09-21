@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useRouter } from 'next/navigation';
 import {
   Calendar,
@@ -230,6 +231,7 @@ export default function PatientDirectoryPage() {
   }
 
   return (
+    <ProtectedRoute>
     <AppShell>
       <div className="space-y-6 animate-fade-in">
         {/* Header */}
@@ -460,5 +462,6 @@ export default function PatientDirectoryPage() {
         />
       )}
     </AppShell>
+    </ProtectedRoute>
   );
 }

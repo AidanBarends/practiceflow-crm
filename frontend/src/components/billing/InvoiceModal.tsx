@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, User, DollarSign, Calendar, FileText } from 'lucide-react';
 import { Invoice, CreateInvoiceData } from '@/types/invoice';
 import { Patient } from '@/types/patient';
-import { Staff } from '@/types/staff';
+import { StaffMember } from '@/types/staff';
 import { fetchPatients } from '@/services/patientService';
 import { fetchStaffMembers } from '@/services/staffService';
 import { createInvoice, updateInvoice } from '@/services/invoiceService';
@@ -24,7 +24,7 @@ export default function InvoiceModal({ isOpen, onClose, onSave, initialData }: I
   const [notes, setNotes] = useState('');
   
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [staff, setStaff] = useState<Staff[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

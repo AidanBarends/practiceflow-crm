@@ -1,20 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, ShieldCheck, Database, CheckCircle2, AlertCircle, Heart, Loader2 } from 'lucide-react';
-import { isSupabaseConfigured } from '@/lib/supabase';
+import { useAuth } from '@/components/auth/AuthContext';
+import { loginWithEmail, resetPassword } from '@/services/authService';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
 
-  function handleSubmit(e: React.FormEvent) {
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace('/dashboard');
+    }
+  }, [authLoading, user, router]);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email || !password) {
       setError('Please enter your email and password.');
@@ -22,9 +36,57 @@ export default function LoginPage() {
     }
     setError('');
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      await loginWithEmail(email, password);
       router.push('/dashboard');
-    }, 600);
+    } catch (err: any) {
+      const message = err?.message || 'Login failed';
+      if (message.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please try again.');
+      } else if (message.includes('Email not confirmed')) {
+        setError('Your email has not been confirmed. Please contact your administrator.');
+      } else if (message.includes('Too many requests')) {
+        setError('Too many login attempts. Please wait a moment and try again.');
+      } else {
+        setError(message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (!resetEmail) {
+      setResetError('Please enter your email address.');
+      return;
+    }
+    setResetError('');
+    setResetLoading(true);
+
+    try {
+      await resetPassword(resetEmail);
+      setResetSent(true);
+    } catch (err: any) {
+      setResetError(err?.message || 'Failed to send reset email. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  }
+
+  // Show nothing while checking if user is already logged in
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
+      </div>
+    );
+  }
+
+  // Already logged in, will redirect
+  if (user) {
+    return null;
   }
 
   return (
@@ -80,90 +142,181 @@ export default function LoginPage() {
             />
           </div>
 
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Welcome Back</h2>
-          <p className="mt-1.5 text-sm text-gray-500">
-            Sign in to access your practice portal.
-          </p>
-
-          {/* Database Connection Banner Removed */}
-
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            <div>
-              <label htmlFor="email" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="doctor@practiceflow.com"
-                  className="input-focus w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
-                  Password
-                </label>
-                <a href="#" className="text-xs font-medium text-teal-600 hover:text-teal-700">
-                  Forgot?
-                </a>
-              </div>
-              <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="input-focus w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-10 text-sm text-gray-900"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">
-                {error}
+          {showForgotPassword ? (
+            /* Forgot Password Form */
+            <>
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">Reset Password</h2>
+              <p className="mt-1.5 text-sm text-gray-500">
+                Enter your email address and we&apos;ll send you a link to reset your password.
               </p>
-            )}
 
-            <div className="flex items-center justify-between pt-1 text-xs text-gray-600">
-              <label className="flex cursor-pointer items-center gap-2">
-                <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
-                Remember me for 30 days
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:from-teal-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 disabled:opacity-70"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
+              {resetSent ? (
+                <div className="mt-6 rounded-xl bg-emerald-50 border border-emerald-200 p-6 text-center">
+                  <CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-emerald-500" />
+                  <h3 className="text-lg font-semibold text-emerald-800">Check Your Email</h3>
+                  <p className="mt-2 text-sm text-emerald-600">
+                    We&apos;ve sent a password reset link to <strong>{resetEmail}</strong>. Please check your inbox and follow the instructions.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setResetSent(false);
+                      setResetEmail('');
+                    }}
+                    className="mt-4 text-sm font-medium text-teal-600 hover:text-teal-700"
+                  >
+                    ← Back to sign in
+                  </button>
+                </div>
               ) : (
-                'Sign In to Portal'
+                <form onSubmit={handleResetPassword} className="mt-6 space-y-4">
+                  <div>
+                    <label htmlFor="reset-email" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+                      <input
+                        id="reset-email"
+                        type="email"
+                        required
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        placeholder="doctor@practiceflow.com"
+                        className="input-focus w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900"
+                      />
+                    </div>
+                  </div>
+
+                  {resetError && (
+                    <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">
+                      {resetError}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={resetLoading}
+                    className="flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:from-teal-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 disabled:opacity-70"
+                  >
+                    {resetLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      'Send Reset Link'
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setResetError('');
+                    }}
+                    className="w-full text-center text-sm font-medium text-gray-500 hover:text-gray-700"
+                  >
+                    ← Back to sign in
+                  </button>
+                </form>
               )}
-            </button>
-          </form>
+            </>
+          ) : (
+            /* Login Form */
+            <>
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">Welcome Back</h2>
+              <p className="mt-1.5 text-sm text-gray-500">
+                Sign in to access your practice portal.
+              </p>
+
+              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                <div>
+                  <label htmlFor="email" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+                    <input
+                      id="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="doctor@practiceflow.com"
+                      className="input-focus w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+                      Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgotPassword(true);
+                        setResetEmail(email);
+                      }}
+                      className="text-xs font-medium text-teal-600 hover:text-teal-700"
+                    >
+                      Forgot?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="input-focus w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-10 text-sm text-gray-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-xs font-medium text-red-600">
+                    <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-1 text-xs text-gray-600">
+                  <label className="flex cursor-pointer items-center gap-2">
+                    <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
+                    Remember me for 30 days
+                  </label>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:from-teal-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 disabled:opacity-70"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign In to Portal'
+                  )}
+                </button>
+              </form>
+            </>
+          )}
 
           <p className="mt-8 text-center text-xs text-gray-400">
             PracticeFlow CRM • Secured with 256-bit Encryption

@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { Plus, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 import AppShell from '@/components/layout/AppShell';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { Appointment, CreateAppointmentData } from '@/types/appointment';
 import { Patient } from '@/types/patient';
-import { Staff } from '@/types/staff';
+import { StaffMember } from '@/types/staff';
 import { fetchAppointments, createAppointment, updateAppointment } from '@/services/appointmentService';
 import { fetchPatients } from '@/services/patientService';
 import { fetchStaffMembers } from '@/services/staffService';
@@ -16,7 +17,7 @@ import { useToast } from '@/components/ui/Toast';
 export default function SchedulingPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [staff, setStaff] = useState<Staff[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,10 +64,18 @@ export default function SchedulingPage() {
 
   const handleSaveAppointment = async (data: CreateAppointmentData) => {
     try {
+      const matchedPatient = patients.find(p => p.id === data.patient_id);
+      const matchedStaff = staff.find(s => s.id === data.doctor_id);
+
       if (editingAppointment) {
         const updated = await updateAppointment(editingAppointment.id, data);
         if (updated) {
-          setAppointments(prev => prev.map(a => a.id === updated.id ? updated : a));
+          const enrichedUpdated: Appointment = {
+            ...updated,
+            patients: matchedPatient ? { id: matchedPatient.id, name: matchedPatient.name, patient_code: matchedPatient.patient_code } : updated.patients,
+            staff: matchedStaff ? { id: matchedStaff.id, name: matchedStaff.name, role: matchedStaff.role, department: matchedStaff.department } : updated.staff,
+          };
+          setAppointments(prev => prev.map(a => a.id === enrichedUpdated.id ? enrichedUpdated : a));
           addToast({
             type: 'success',
             title: 'Appointment Updated',
@@ -76,7 +85,12 @@ export default function SchedulingPage() {
       } else {
         const created = await createAppointment(data);
         if (created) {
-          setAppointments(prev => [...prev, created]);
+          const enrichedCreated: Appointment = {
+            ...created,
+            patients: matchedPatient ? { id: matchedPatient.id, name: matchedPatient.name, patient_code: matchedPatient.patient_code } : created.patients,
+            staff: matchedStaff ? { id: matchedStaff.id, name: matchedStaff.name, role: matchedStaff.role, department: matchedStaff.department } : created.staff,
+          };
+          setAppointments(prev => [...prev, enrichedCreated]);
           addToast({
             type: 'success',
             title: 'Appointment Scheduled',
@@ -129,6 +143,7 @@ export default function SchedulingPage() {
   const longDate = currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
+    <ProtectedRoute>
     <AppShell>
       <div className="flex h-[calc(100vh-8rem)] flex-col space-y-6 animate-fade-in">
         {/* Header */}
@@ -183,6 +198,8 @@ export default function SchedulingPage() {
             appointments={appointments} 
             currentDate={currentDate} 
             onEditAppointment={handleEdit} 
+            patients={patients}
+            staff={staff}
           />
         )}
       </div>
@@ -196,5 +213,6 @@ export default function SchedulingPage() {
         initialData={editingAppointment}
       />
     </AppShell>
+    </ProtectedRoute>
   );
 }

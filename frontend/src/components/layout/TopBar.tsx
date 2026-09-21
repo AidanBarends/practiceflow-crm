@@ -2,17 +2,29 @@
 
 import { usePathname } from 'next/navigation';
 import { Search, Bell, ChevronRight } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthContext';
 
 const pageTitles: Record<string, { title: string; breadcrumb: string[] }> = {
   '/dashboard': { title: 'Dashboard', breadcrumb: ['Home', 'Dashboard'] },
   '/patients': { title: 'Patient Directory', breadcrumb: ['Home', 'Patient Directory'] },
   '/clinical-workspace': { title: 'Clinical Workspace', breadcrumb: ['Home', 'Clinical Workspace'] },
   '/staff-management': { title: 'Staff Management', breadcrumb: ['Home', 'Staff Management'] },
+  '/scheduling': { title: 'Scheduling', breadcrumb: ['Home', 'Scheduling'] },
+  '/billing': { title: 'Billing', breadcrumb: ['Home', 'Billing'] },
 };
 
 export default function TopBar() {
   const pathname = usePathname() || '/dashboard';
   const pageInfo = pageTitles[pathname] || { title: 'Dashboard', breadcrumb: ['Home'] };
+  const { user, profile } = useAuth();
+
+  const userName = profile?.fullName || (user?.email ? user.email.split('@')[0] : 'User');
+  const userRole = profile?.role || 'Staff';
+
+  const getInitials = (name: string) => {
+    if (!name) return '??';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-gray-200/80 bg-white/80 backdrop-blur-sm px-6">
@@ -60,11 +72,11 @@ export default function TopBar() {
         {/* User */}
         <div className="flex items-center gap-3">
           <div className="text-right leading-tight">
-            <p className="text-sm font-semibold text-gray-800">Dr. Sarah Smith</p>
-            <p className="text-[11px] text-gray-400">Internal Medicine</p>
+            <p className="text-sm font-semibold text-gray-800">{userName}</p>
+            <p className="text-[11px] text-gray-400">{userRole}</p>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 text-xs font-bold text-white shadow-sm">
-            SS
+            {getInitials(userName)}
           </div>
         </div>
       </div>

@@ -5,11 +5,25 @@ interface StaffTableProps {
   staff: StaffMember[];
   onEdit: (staff: StaffMember) => void;
   onDeactivate: (staff: StaffMember) => void;
+  onCreateLogin?: (staff: StaffMember) => void;
+  onResetPassword?: (staff: StaffMember) => void;
+  onChangeRole?: (staff: StaffMember) => void;
+  onToggleAccess?: (staff: StaffMember, revoke: boolean) => void;
+  onRemoveLogin?: (staff: StaffMember) => void;
 }
 
-const headers = ['Staff Member', 'Role', 'Account Status', 'Join Date', 'Last Active', 'Actions'];
+const headers = ['Staff Member', 'Role', 'Status / Login', 'Join Date', 'Last Active', 'Actions'];
 
-export default function StaffTable({ staff, onEdit, onDeactivate }: StaffTableProps) {
+export default function StaffTable({
+  staff,
+  onEdit,
+  onDeactivate,
+  onCreateLogin,
+  onResetPassword,
+  onChangeRole,
+  onToggleAccess,
+  onRemoveLogin,
+}: StaffTableProps) {
   if (staff.length === 0) {
     return (
       <div className="py-16 text-center text-sm text-gray-400">
@@ -37,6 +51,11 @@ export default function StaffTable({ staff, onEdit, onDeactivate }: StaffTablePr
               staff={member}
               onEdit={onEdit}
               onDeactivate={onDeactivate}
+              onCreateLogin={onCreateLogin}
+              onResetPassword={onResetPassword}
+              onChangeRole={onChangeRole}
+              onToggleAccess={onToggleAccess}
+              onRemoveLogin={onRemoveLogin}
             />
           ))}
         </tbody>

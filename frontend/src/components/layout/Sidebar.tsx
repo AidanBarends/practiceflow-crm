@@ -11,7 +11,10 @@ import {
   LogOut,
   CalendarDays,
   CreditCard,
+  Loader2,
 } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthContext';
+import { ROLE_ACCESS } from '@/types/auth';
 
 
 const navItems = [
@@ -25,6 +28,30 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { user, profile, logout, isLoading } = useAuth();
+
+  // Get user initials
+  const getInitials = (name: string) => {
+    if (!name) return '??';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
+  const userName = profile?.fullName || (user?.email ? user.email.split('@')[0] : 'User');
+  const userRole = profile?.role || 'Staff';
+  const userInitials = getInitials(userName);
+
+  // Filter nav items based on user role - NEVER flash restricted tabs while loading
+  const visibleNavItems = navItems.filter(item => {
+    const allowedRoles = ROLE_ACCESS[item.href];
+    if (!allowedRoles) return true;
+
+    // While loading or before profile is resolved, only show base tabs accessible by all roles
+    if (isLoading || !profile) {
+      return allowedRoles.includes('Nurse') && allowedRoles.includes('Receptionist');
+    }
+
+    return allowedRoles.includes(profile.role);
+  });
 
   return (
     <aside className="flex h-screen w-[260px] flex-shrink-0 flex-col bg-slate-900">
@@ -48,7 +75,7 @@ export default function Sidebar() {
         <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
           Main Menu
         </p>
-        {navItems.map(({ label, href, icon: Icon }) => {
+        {visibleNavItems.map(({ label, href, icon: Icon }) => {
           const isActive = pathname === href || pathname?.startsWith(href + '/');
           return (
             <Link
@@ -75,22 +102,26 @@ export default function Sidebar() {
         <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5">
           <div className="relative">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 text-xs font-bold text-white">
-              SS
+              {userInitials}
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-900 bg-emerald-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white truncate">Dr. Sarah Smith</p>
-            <p className="text-[11px] text-slate-500">Administrator</p>
+            <p className="text-sm font-semibold text-white truncate">{userName}</p>
+            <p className="text-[11px] text-slate-500">{userRole}</p>
           </div>
         </div>
-        <Link
-          href="/"
-          className="mt-2 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
+        <button
+          onClick={logout}
+          className="mt-2 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
         >
-          <LogOut className="h-3.5 w-3.5" />
+          {isLoading ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <LogOut className="h-3.5 w-3.5" />
+          )}
           Sign Out
-        </Link>
+        </button>
       </div>
     </aside>
   );

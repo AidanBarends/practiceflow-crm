@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, User, Stethoscope } from 'lucide-react';
 import { Patient } from '@/types/patient';
-import { Staff } from '@/types/staff';
+import { StaffMember } from '@/types/staff';
 import { Appointment, CreateAppointmentData } from '@/types/appointment';
 
 interface AppointmentModalProps {
@@ -9,7 +9,7 @@ interface AppointmentModalProps {
   onClose: () => void;
   onSave: (data: CreateAppointmentData) => Promise<void>;
   patients: Patient[];
-  staff: Staff[];
+  staff: StaffMember[];
   initialData?: Appointment | null;
 }
 

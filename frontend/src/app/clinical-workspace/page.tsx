@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import AppShell from '@/components/layout/AppShell';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import PatientContextBar from '@/components/clinical/PatientContextBar';
 import ActiveMedicationsList from '@/components/clinical/ActiveMedicationsList';
 import VisitHistoryTimeline from '@/components/clinical/VisitHistoryTimeline';
@@ -311,6 +312,7 @@ function ClinicalWorkspaceContent() {
 
 export default function ClinicalWorkspacePage() {
   return (
+    <ProtectedRoute allowedRoles={['Doctor']}>
     <Suspense
       fallback={
         <AppShell>
@@ -322,5 +324,6 @@ export default function ClinicalWorkspacePage() {
     >
       <ClinicalWorkspaceContent />
     </Suspense>
+    </ProtectedRoute>
   );
 }

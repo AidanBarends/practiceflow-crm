@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, FileText, Loader2, DollarSign } from 'lucide-react';
 import AppShell from '@/components/layout/AppShell';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { Invoice } from '@/types/invoice';
 import { fetchInvoices, deleteInvoice, updateInvoice } from '@/services/invoiceService';
 import InvoiceModal from '@/components/billing/InvoiceModal';
@@ -85,6 +86,7 @@ export default function BillingPage() {
   };
 
   return (
+    <ProtectedRoute allowedRoles={['Doctor', 'Admin']}>
     <>
       <div className="print-only">
         {invoiceToPrint && <PrintableInvoiceSlip invoice={invoiceToPrint} />}
@@ -236,5 +238,6 @@ export default function BillingPage() {
         </AppShell>
       </div>
     </>
+    </ProtectedRoute>
   );
 }

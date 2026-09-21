@@ -1,9 +1,13 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Invoice, CreateInvoiceData } from '@/types/invoice';
 
 let localInvoicesMemory: Invoice[] = [];
 
 export async function fetchInvoices(): Promise<Invoice[]> {
+  if (!isSupabaseConfigured || !supabase) {
+    return [...localInvoicesMemory];
+  }
+
   try {
     const { data, error } = await supabase
       .from('invoices')
@@ -31,6 +35,17 @@ export async function fetchInvoices(): Promise<Invoice[]> {
 }
 
 export async function createInvoice(data: CreateInvoiceData): Promise<Invoice | null> {
+  if (!isSupabaseConfigured || !supabase) {
+    const newLocal: Invoice = {
+      id: crypto.randomUUID(),
+      ...data,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    localInvoicesMemory.push(newLocal);
+    return newLocal;
+  }
+
   try {
     const { data: created, error } = await supabase
       .from('invoices')
@@ -62,6 +77,15 @@ export async function createInvoice(data: CreateInvoiceData): Promise<Invoice | 
 }
 
 export async function updateInvoice(id: string, data: Partial<CreateInvoiceData>): Promise<Invoice | null> {
+  if (!isSupabaseConfigured || !supabase) {
+    const idx = localInvoicesMemory.findIndex(i => i.id === id);
+    if (idx !== -1) {
+      localInvoicesMemory[idx] = { ...localInvoicesMemory[idx], ...data, updated_at: new Date().toISOString() };
+      return localInvoicesMemory[idx];
+    }
+    return null;
+  }
+
   try {
     const { data: updated, error } = await supabase
       .from('invoices')
@@ -92,6 +116,11 @@ export async function updateInvoice(id: string, data: Partial<CreateInvoiceData>
 }
 
 export async function deleteInvoice(id: string): Promise<boolean> {
+  if (!isSupabaseConfigured || !supabase) {
+    localInvoicesMemory = localInvoicesMemory.filter(i => i.id !== id);
+    return true;
+  }
+
   try {
     const { error } = await supabase
       .from('invoices')

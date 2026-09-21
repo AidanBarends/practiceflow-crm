@@ -10,4 +10,9 @@ export interface StaffMember {
   status: AccountStatus;
   joinDate: string;
   lastActive: string;
+  authUserId?: string;
+  hasLogin?: boolean;
+  loginStatus?: 'Active' | 'Revoked';
 }
+
+export type Staff = StaffMember;

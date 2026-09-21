@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AppShell from '@/components/layout/AppShell';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { useAuth } from '@/components/auth/AuthContext';
 import { fetchPatients } from '@/services/patientService';
 import { fetchStaffMembers } from '@/services/staffService';
 import { Patient } from '@/types/patient';
@@ -16,6 +18,9 @@ export default function DashboardPage() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { addToast } = useToast();
+  const { profile } = useAuth();
+
+  const userName = profile?.fullName || 'Doctor';
 
   useEffect(() => {
     const loadData = async () => {
@@ -70,7 +75,16 @@ export default function DashboardPage() {
   // Mock appointments removed for production
   const appointments: any[] = [];
 
+  // Determine greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
   return (
+    <ProtectedRoute>
     <AppShell>
       <div className="space-y-6 animate-fade-in pb-8">
         {/* Welcome Header */}
@@ -78,7 +92,7 @@ export default function DashboardPage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
           <div className="relative z-10">
             <p className="text-teal-400 font-medium text-sm mb-2">{currentDateString}</p>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">Good morning, Dr. Smith</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">{getGreeting()}, {userName}</h1>
             <p className="text-slate-300 max-w-xl">Here is what is happening at your practice today. You have {appointments.length} upcoming appointments.</p>
           </div>
         </div>
@@ -293,5 +307,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </AppShell>
+    </ProtectedRoute>
   );
 }

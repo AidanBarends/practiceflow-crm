@@ -1,33 +1,43 @@
 import { useMemo } from 'react';
 import { Appointment } from '@/types/appointment';
-import { Clock, User } from 'lucide-react';
+import { Patient } from '@/types/patient';
+import { StaffMember } from '@/types/staff';
+import { Clock, User, Stethoscope } from 'lucide-react';
 
 interface CalendarViewProps {
   appointments: Appointment[];
   currentDate: Date;
   onEditAppointment: (appointment: Appointment) => void;
+  patients?: Patient[];
+  staff?: StaffMember[];
 }
 
-export default function CalendarView({ appointments, currentDate, onEditAppointment }: CalendarViewProps) {
+export default function CalendarView({
+  appointments,
+  currentDate,
+  onEditAppointment,
+  patients = [],
+  staff = [],
+}: CalendarViewProps) {
   // Simple daily view showing slots from 8 AM to 6 PM
   const hours = Array.from({ length: 11 }, (_, i) => i + 8);
   
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Scheduled': return 'bg-teal-50 border-teal-200 text-teal-800';
-      case 'Completed': return 'bg-emerald-50 border-emerald-200 text-emerald-800';
-      case 'Cancelled': return 'bg-red-50 border-red-200 text-red-800';
-      case 'No Show': return 'bg-orange-50 border-orange-200 text-orange-800';
+      case 'Scheduled': return 'bg-teal-50/90 border-teal-200 text-teal-900';
+      case 'Completed': return 'bg-emerald-50/90 border-emerald-200 text-emerald-900';
+      case 'Cancelled': return 'bg-red-50/90 border-red-200 text-red-900';
+      case 'No Show': return 'bg-orange-50/90 border-orange-200 text-orange-900';
       default: return 'bg-slate-50 border-slate-200 text-slate-800';
     }
   };
 
   const getStatusDot = (status: string) => {
     switch (status) {
-      case 'Scheduled': return 'bg-teal-400';
-      case 'Completed': return 'bg-emerald-400';
-      case 'Cancelled': return 'bg-red-400';
-      case 'No Show': return 'bg-orange-400';
+      case 'Scheduled': return 'bg-teal-500';
+      case 'Completed': return 'bg-emerald-500';
+      case 'Cancelled': return 'bg-red-500';
+      case 'No Show': return 'bg-orange-500';
       default: return 'bg-slate-400';
     }
   };
@@ -80,14 +90,25 @@ export default function CalendarView({ appointments, currentDate, onEditAppointm
                     const start = new Date(app.start_time);
                     const end = new Date(app.end_time);
                     const durationMins = (end.getTime() - start.getTime()) / 60000;
+
+                    // Resolve patient from app.patients or fallback to patients list
+                    const matchedPatient = app.patients || patients.find(p => p.id === app.patient_id);
+                    const patientName = matchedPatient?.name || 'Unknown Patient';
+
+                    // Resolve doctor from app.staff or fallback to staff list
+                    const matchedStaff = app.staff || staff.find(s => s.id === app.doctor_id);
+                    const doctorRawName = matchedStaff?.name || app.staff?.name;
+                    const doctorDisplayName = doctorRawName
+                      ? (doctorRawName.startsWith('Dr.') ? doctorRawName : `Dr. ${doctorRawName}`)
+                      : 'Dr. Unassigned';
                     
                     return (
                       <div
                         key={app.id}
                         onClick={() => onEditAppointment(app)}
-                        className={`relative z-10 flex min-w-[240px] cursor-pointer flex-col rounded-xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${getStatusColor(app.status)}`}
+                        className={`relative z-10 flex min-w-[260px] cursor-pointer flex-col rounded-xl border p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${getStatusColor(app.status)}`}
                         style={{
-                          height: Math.max(80, (durationMins / 60) * 100) + 'px'
+                          height: Math.max(85, (durationMins / 60) * 105) + 'px'
                         }}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -95,21 +116,31 @@ export default function CalendarView({ appointments, currentDate, onEditAppointm
                             <Clock className="h-3 w-3 opacity-70" />
                             {start.toTimeString().slice(0, 5)} - {end.toTimeString().slice(0, 5)}
                           </div>
-                          <div className="flex items-center gap-1.5 rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm">
+                          <div className="flex items-center gap-1.5 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm shadow-xs">
                             <div className={`h-1.5 w-1.5 rounded-full ${getStatusDot(app.status)}`} />
                             {app.status}
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-2 font-medium">
-                          <User className="h-3.5 w-3.5 opacity-60" />
-                          <span className="truncate">{app.patients?.name || 'Unknown Patient'}</span>
+                        <div className="flex items-center gap-2 font-semibold text-slate-900">
+                          <User className="h-3.5 w-3.5 text-teal-700 opacity-80 shrink-0" />
+                          <span className="truncate">{patientName}</span>
+                          {matchedPatient?.patient_code && (
+                            <span className="text-[10px] text-teal-800/70 font-normal shrink-0">
+                              ({matchedPatient.patient_code})
+                            </span>
+                          )}
                         </div>
                         
-                        <div className="mt-auto pt-2 text-[11px] opacity-80 flex justify-between items-center">
-                          <span className="truncate max-w-[120px]">Dr. {app.staff?.name?.split(' ').pop() || 'Unassigned'}</span>
+                        <div className="mt-auto pt-2 text-[11px] opacity-85 flex justify-between items-center border-t border-black/5">
+                          <span className="truncate max-w-[140px] flex items-center gap-1 font-medium">
+                            <Stethoscope className="h-3 w-3 opacity-70 shrink-0" />
+                            {doctorDisplayName}
+                          </span>
                           {app.reason && (
-                            <span className="truncate max-w-[80px] bg-white/40 px-1.5 rounded text-[10px]">{app.reason}</span>
+                            <span className="truncate max-w-[90px] bg-white/60 px-1.5 py-0.5 rounded text-[10px] font-medium text-slate-700">
+                              {app.reason}
+                            </span>
                           )}
                         </div>
                       </div>
