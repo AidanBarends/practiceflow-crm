@@ -1,4 +1,4 @@
-import { Pencil, UserX, MoreHorizontal, KeyRound } from 'lucide-react';
+import { Pencil, UserX, KeyRound } from 'lucide-react';
 import { StaffMember } from '@/types/staff';
 import Badge from '@/components/ui/Badge';
 import AccountStatusIndicator from './AccountStatusIndicator';

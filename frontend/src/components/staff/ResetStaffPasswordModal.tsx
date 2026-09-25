@@ -48,8 +48,8 @@ export default function ResetStaffPasswordModal({
       await resetPassword(staff.email);
       setEmailSent(true);
       setTimeout(() => setEmailSent(false), 4000);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to send reset email');
+    } catch (err) {
+      setError((err instanceof Error ? err.message : '') || 'Failed to send reset email');
     } finally {
       setIsSendingEmail(false);
     }

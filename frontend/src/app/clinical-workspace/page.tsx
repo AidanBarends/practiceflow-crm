@@ -28,7 +28,7 @@ import { Calendar, Clock, Save } from 'lucide-react';
 const emptyNote: SoapNote = { subjective: '', objective: '', assessment: '', plan: '' };
 const defaultVitals: Vitals = { bloodPressure: '—', heartRate: '—', temperature: '—' };
 
-function ClinicalWorkspaceContent() {
+function ClinicalWorkspaceContent({ patientId }: { patientId: string | null }) {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [note, setNote] = useState<SoapNote>(emptyNote);
@@ -52,18 +52,10 @@ function ClinicalWorkspaceContent() {
 
   const { addToast } = useToast();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const patientId = searchParams.get('patientId');
 
-  // Load patient when patientId changes — fixes stale data when navigating between patients
+  // Content is keyed by patientId, so state starts fresh for each patient
   useEffect(() => {
     let isCancelled = false;
-    setIsLoading(true);
-    setPatient(null);
-    setNote(emptyNote);
-    setVitals(defaultVitals);
-    setAttachedLabIds([]);
-    setSessionTime(0);
 
     getClinicalPatient(patientId || '').then((data) => {
       if (!isCancelled) {
@@ -262,12 +254,14 @@ function ClinicalWorkspaceContent() {
         onSelectTemplate={setNote}
       />
 
-      <AttachLabsModal
-        isOpen={isAttachLabsOpen}
-        onClose={() => setIsAttachLabsOpen(false)}
-        attachedLabIds={attachedLabIds}
-        onSave={setAttachedLabIds}
-      />
+      {isAttachLabsOpen && (
+        <AttachLabsModal
+          isOpen={isAttachLabsOpen}
+          onClose={() => setIsAttachLabsOpen(false)}
+          attachedLabIds={attachedLabIds}
+          onSave={setAttachedLabIds}
+        />
+      )}
 
       <PreviewNoteModal
         isOpen={isPreviewOpen}
@@ -310,6 +304,11 @@ function ClinicalWorkspaceContent() {
   );
 }
 
+function ClinicalWorkspaceForPatient() {
+  const patientId = useSearchParams().get('patientId');
+  return <ClinicalWorkspaceContent key={patientId ?? ''} patientId={patientId} />;
+}
+
 export default function ClinicalWorkspacePage() {
   return (
     <ProtectedRoute allowedRoles={['Doctor']}>
@@ -322,7 +321,7 @@ export default function ClinicalWorkspacePage() {
         </AppShell>
       }
     >
-      <ClinicalWorkspaceContent />
+      <ClinicalWorkspaceForPatient />
     </Suspense>
     </ProtectedRoute>
   );

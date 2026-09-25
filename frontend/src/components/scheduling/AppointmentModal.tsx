@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Calendar, Clock, User, Stethoscope } from 'lucide-react';
 import { Patient } from '@/types/patient';
 import { StaffMember } from '@/types/staff';
@@ -22,45 +22,21 @@ export default function AppointmentModal({
   initialData,
 }: AppointmentModalProps) {
   console.log("AppointmentModal render. patients:", patients?.length, "staff:", staff?.length);
-  const [patientId, setPatientId] = useState('');
-  const [doctorId, setDoctorId] = useState('');
-  const [date, setDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [duration, setDuration] = useState('30');
-  const [reason, setReason] = useState('');
-  const [status, setStatus] = useState<'Scheduled' | 'Completed' | 'Cancelled' | 'No Show'>('Scheduled');
+  // Parent mounts this modal only while open, so initial state is seeded from props once per open
+  const initialStart = initialData ? new Date(initialData.start_time) : null;
+  const initialEnd = initialData ? new Date(initialData.end_time) : null;
+
+  const [patientId, setPatientId] = useState(initialData?.patient_id ?? '');
+  const [doctorId, setDoctorId] = useState(initialData?.doctor_id ?? '');
+  const [date, setDate] = useState(initialStart ? initialStart.toISOString().split('T')[0] : '');
+  const [startTime, setStartTime] = useState(initialStart ? initialStart.toTimeString().slice(0, 5) : '');
+  const [duration, setDuration] = useState(
+    initialStart && initialEnd ? String((initialEnd.getTime() - initialStart.getTime()) / 60000) : '30'
+  );
+  const [reason, setReason] = useState(initialData?.reason ?? '');
+  const [status, setStatus] = useState<'Scheduled' | 'Completed' | 'Cancelled' | 'No Show'>(initialData?.status ?? 'Scheduled');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-
-  const resetForm = () => {
-    setPatientId('');
-    setDoctorId('');
-    setDate('');
-    setStartTime('');
-    setDuration('30');
-    setReason('');
-    setStatus('Scheduled');
-    setError('');
-  };
-
-  useEffect(() => {
-    if (initialData) {
-      setPatientId(initialData.patient_id);
-      setDoctorId(initialData.doctor_id);
-      
-      const start = new Date(initialData.start_time);
-      const end = new Date(initialData.end_time);
-      
-      setDate(start.toISOString().split('T')[0]);
-      setStartTime(start.toTimeString().slice(0, 5));
-      setDuration(String((end.getTime() - start.getTime()) / 60000));
-      setReason(initialData.reason || '');
-      setStatus(initialData.status);
-    } else {
-      resetForm();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData, isOpen]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,7 +62,6 @@ export default function AppointmentModal({
         reason,
       });
       onClose();
-      resetForm();
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message || 'Failed to save appointment');
@@ -132,7 +107,7 @@ export default function AppointmentModal({
               >
                 <option value="">Select a patient...</option>
                 {patients && patients.length > 0 ? patients.map(p => (
-                  <option key={p.id || Math.random()} value={p.id}>{p.name} ({p.patient_code})</option>
+                  <option key={p.id} value={p.id}>{p.name} ({p.patient_code})</option>
                 )) : null}
               </select>
             </div>
@@ -149,7 +124,7 @@ export default function AppointmentModal({
               >
                 <option value="">Select a doctor...</option>
                 {staff && staff.length > 0 ? staff.filter(s => s.role.toLowerCase().includes('doctor') || s.role.toLowerCase().includes('physician')).map(s => (
-                  <option key={s.id || Math.random()} value={s.id}>{s.name} - {s.department}</option>
+                  <option key={s.id} value={s.id}>{s.name} - {s.department}</option>
                 )) : null}
               </select>
             </div>

@@ -21,14 +21,21 @@ interface Props {
   onSave: (values: PatientFormValues) => void;
 }
 
+function splitName(name: string) {
+  const parts = name.split(',');
+  if (parts.length === 2) return { first: parts[1].trim(), last: parts[0].trim() };
+  return { first: name, last: '' };
+}
+
 export function PatientFormModal({ mode, patient, onClose, onSave }: Props) {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [dob, setDob] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [assignedDoctor, setAssignedDoctor] = useState('Dr. Sarah Smith');
-  const [status, setStatus] = useState<PatientStatus>('Active');
+  // Parent mounts this modal only while open, so initial state is seeded from props once per open
+  const [firstName, setFirstName] = useState(() => (patient ? splitName(patient.name).first : ''));
+  const [lastName, setLastName] = useState(() => (patient ? splitName(patient.name).last : ''));
+  const [dob, setDob] = useState(patient?.dob ?? '');
+  const [phone, setPhone] = useState(patient?.phone ?? '');
+  const [email, setEmail] = useState(patient?.email ?? '');
+  const [assignedDoctor, setAssignedDoctor] = useState(patient?.assignedDoctor ?? 'Dr. Sarah Smith');
+  const [status, setStatus] = useState<PatientStatus>(patient?.status ?? 'Active');
 
   const [doctors, setDoctors] = useState<{ id: string; name: string }[]>([]);
 
@@ -46,24 +53,6 @@ export function PatientFormModal({ mode, patient, onClose, onSave }: Props) {
       }
     }
     loadDoctors();
-  }, [patient]);
-
-  useEffect(() => {
-    if (patient) {
-      const parts = patient.name.split(',');
-      if (parts.length === 2) {
-        setLastName(parts[0].trim());
-        setFirstName(parts[1].trim());
-      } else {
-        setFirstName(patient.name);
-        setLastName('');
-      }
-      setDob(patient.dob);
-      setPhone(patient.phone);
-      setEmail(patient.email || '');
-      setAssignedDoctor(patient.assignedDoctor);
-      setStatus(patient.status);
-    }
   }, [patient]);
 
   function handleSubmit(e: React.FormEvent) {

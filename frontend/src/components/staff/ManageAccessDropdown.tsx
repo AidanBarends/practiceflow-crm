@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ShieldCheck, ChevronDown, KeyRound, UserCog, UserX, UserCheck, Trash2, Loader2 } from 'lucide-react';
-import { StaffMember, StaffRole } from '@/types/staff';
+import { ShieldCheck, ChevronDown, KeyRound, UserCog, UserX, UserCheck, Trash2 } from 'lucide-react';
+import { StaffMember } from '@/types/staff';
 
 interface ManageAccessDropdownProps {
   staff: StaffMember;

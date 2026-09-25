@@ -137,7 +137,7 @@ export default function FullMedicalRecordModal({
               </div>
               <p className="text-sm font-semibold text-gray-700">No clinical notes yet</p>
               <p className="mt-1 text-xs text-gray-400">
-                Complete an encounter to start building this patient's medical record.
+                Complete an encounter to start building this patient&apos;s medical record.
               </p>
             </div>
           ) : (

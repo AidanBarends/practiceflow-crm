@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { StaffMember, StaffRole, AccountStatus } from '@/types/staff';
 
@@ -20,21 +20,12 @@ export default function StaffFormModal({
   onSubmit,
   initialData,
 }: StaffFormModalProps) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [department, setDepartment] = useState('');
-  const [role, setRole] = useState<StaffRole>('Doctor');
-  const [status, setStatus] = useState<AccountStatus>('Active');
-
-  useEffect(() => {
-    if (isOpen) {
-      setName(initialData?.name ?? '');
-      setEmail(initialData?.email ?? '');
-      setDepartment(initialData?.department ?? '');
-      setRole(initialData?.role ?? 'Doctor');
-      setStatus(initialData?.status ?? 'Active');
-    }
-  }, [isOpen, initialData]);
+  // Parent mounts this modal only while open, so initial state is seeded from props once per open
+  const [name, setName] = useState(initialData?.name ?? '');
+  const [email, setEmail] = useState(initialData?.email ?? '');
+  const [department, setDepartment] = useState(initialData?.department ?? '');
+  const [role, setRole] = useState<StaffRole>(initialData?.role ?? 'Doctor');
+  const [status, setStatus] = useState<AccountStatus>(initialData?.status ?? 'Active');
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

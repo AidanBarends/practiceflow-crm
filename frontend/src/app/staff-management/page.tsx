@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Download } from 'lucide-react';
 import AppShell from '@/components/layout/AppShell';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import { useAuth } from '@/components/auth/AuthContext';
 import StaffPageHeader from '@/components/staff/StaffPageHeader';
 import StaffStatsGrid from '@/components/staff/StaffStatsGrid';
 import StaffFilterBar from '@/components/staff/StaffFilterBar';
@@ -34,7 +33,6 @@ export default function StaffManagementPage() {
   const [allStaff, setAllStaff] = useState<StaffMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { addToast } = useToast();
-  const { isAdmin } = useAuth();
 
   useEffect(() => {
     async function loadData() {
@@ -326,12 +324,14 @@ export default function StaffManagementPage() {
         </div>
 
         {/* Edit / Add Staff Modal */}
-        <StaffFormModal
-          isOpen={isFormOpen}
-          onClose={() => setIsFormOpen(false)}
-          onSubmit={handleFormSubmit}
-          initialData={editingStaff}
-        />
+        {isFormOpen && (
+          <StaffFormModal
+            isOpen={isFormOpen}
+            onClose={() => setIsFormOpen(false)}
+            onSubmit={handleFormSubmit}
+            initialData={editingStaff}
+          />
+        )}
 
         {/* Create Login Modal */}
         <CreateLoginModal

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { AuthState, UserProfile } from '@/types/auth';
 import { StaffRole } from '@/types/staff';
 import { getCurrentUser, getUserProfile, logout as authLogout, onAuthStateChange } from '@/services/authService';
@@ -29,7 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   const loadProfile = useCallback(async (userId: string) => {
     try {

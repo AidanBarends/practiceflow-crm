@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { createClient, type AuthChangeEvent, type Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { UserProfile } from '@/types/auth';
 import { StaffRole } from '@/types/staff';
 
@@ -49,7 +49,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   if (!supabase) return null;
 
   try {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('id', userId)
@@ -228,7 +228,7 @@ export async function updatePassword(newPassword: string) {
 /**
  * Subscribe to auth state changes.
  */
-export function onAuthStateChange(callback: (event: string, session: any) => void) {
+export function onAuthStateChange(callback: (event: AuthChangeEvent, session: Session | null) => void) {
   if (!supabase) return { data: { subscription: { unsubscribe: () => {} } } };
   return supabase.auth.onAuthStateChange(callback);
 }

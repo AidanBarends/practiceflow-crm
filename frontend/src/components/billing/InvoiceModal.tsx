@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, User, DollarSign, Calendar, FileText } from 'lucide-react';
+import { X, User, Calendar, FileText } from 'lucide-react';
 import { Invoice, CreateInvoiceData } from '@/types/invoice';
 import { Patient } from '@/types/patient';
 import { StaffMember } from '@/types/staff';
@@ -16,12 +16,13 @@ interface InvoiceModalProps {
 }
 
 export default function InvoiceModal({ isOpen, onClose, onSave, initialData }: InvoiceModalProps) {
-  const [patientId, setPatientId] = useState('');
-  const [doctorId, setDoctorId] = useState('');
-  const [amount, setAmount] = useState('');
-  const [status, setStatus] = useState<Invoice['status']>('Pending');
-  const [dueDate, setDueDate] = useState('');
-  const [notes, setNotes] = useState('');
+  // Parent mounts this modal only while open, so initial state is seeded from props once per open
+  const [patientId, setPatientId] = useState(initialData?.patient_id ?? '');
+  const [doctorId, setDoctorId] = useState(initialData?.doctor_id ?? '');
+  const [amount, setAmount] = useState(initialData ? initialData.amount.toString() : '');
+  const [status, setStatus] = useState<Invoice['status']>(initialData?.status ?? 'Pending');
+  const [dueDate, setDueDate] = useState(() => initialData?.due_date ?? new Date().toISOString().split('T')[0]);
+  const [notes, setNotes] = useState(initialData?.notes ?? '');
   
   const [patients, setPatients] = useState<Patient[]>([]);
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -34,25 +35,8 @@ export default function InvoiceModal({ isOpen, onClose, onSave, initialData }: I
     if (isOpen) {
       fetchPatients().then(setPatients);
       fetchStaffMembers().then(setStaff);
-      
-      if (initialData) {
-        setPatientId(initialData.patient_id);
-        setDoctorId(initialData.doctor_id || '');
-        setAmount(initialData.amount.toString());
-        setStatus(initialData.status);
-        setDueDate(initialData.due_date);
-        setNotes(initialData.notes || '');
-      } else {
-        setPatientId('');
-        setDoctorId('');
-        setAmount('');
-        setStatus('Pending');
-        setDueDate(new Date().toISOString().split('T')[0]);
-        setNotes('');
-      }
-      setError(null);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

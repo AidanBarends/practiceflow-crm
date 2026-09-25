@@ -49,16 +49,14 @@ export default function DashboardPage() {
   const activePatients = patients.filter(p => p.status === 'Active').length;
   const activeStaff = staff.filter(s => s.status === 'Active').length;
   
-  const [currentDateString, setCurrentDateString] = useState<string>('');
-
-  useEffect(() => {
-    setCurrentDateString(new Date().toLocaleDateString('en-US', {
+  const [currentDateString] = useState(() =>
+    new Date().toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    }));
-  }, []);
+    })
+  );
 
   // Helper for deterministic colors
   const getInitialsColor = (name: string) => {
@@ -73,7 +71,7 @@ export default function DashboardPage() {
   };
 
   // Mock appointments removed for production
-  const appointments: any[] = [];
+  const appointments: { time: string; patient: string; type: string; doctor: string; color: string }[] = [];
 
   // Determine greeting based on time of day
   const getGreeting = () => {

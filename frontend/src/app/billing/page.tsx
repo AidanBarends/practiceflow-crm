@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, FileText, Loader2, DollarSign } from 'lucide-react';
+import { Plus, Search, FileText, Loader2 } from 'lucide-react';
 import AppShell from '@/components/layout/AppShell';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { Invoice } from '@/types/invoice';
-import { fetchInvoices, deleteInvoice, updateInvoice } from '@/services/invoiceService';
+import { fetchInvoices, deleteInvoice } from '@/services/invoiceService';
 import InvoiceModal from '@/components/billing/InvoiceModal';
 import PrintableInvoiceSlip from '@/components/billing/PrintableInvoiceSlip';
 import { useToast } from '@/components/ui/Toast';
@@ -32,7 +32,10 @@ export default function BillingPage() {
   };
 
   useEffect(() => {
-    loadData();
+    fetchInvoices().then((data) => {
+      setInvoices(data);
+      setIsLoading(false);
+    });
   }, []);
 
   const handleOpenNew = () => {
@@ -226,7 +229,7 @@ export default function BillingPage() {
             )}
           </div>
 
-          <InvoiceModal
+          {isModalOpen && <InvoiceModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             onSave={async () => {
@@ -234,7 +237,7 @@ export default function BillingPage() {
               setIsModalOpen(false);
             }}
             initialData={editingInvoice}
-          />
+          />}
         </AppShell>
       </div>
     </>

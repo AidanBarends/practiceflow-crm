@@ -78,8 +78,8 @@ export default function CreateLoginModal({ isOpen, staff, onClose, onSuccess }: 
       });
       setSuccess(true);
       onSuccess(staff.id);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to create login account.');
+    } catch (err) {
+      setError((err instanceof Error ? err.message : '') || 'Failed to create login account.');
     } finally {
       setIsLoading(false);
     }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Lock, Mail, ShieldCheck, Database, CheckCircle2, AlertCircle, Heart, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ShieldCheck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthContext';
 import { loginWithEmail, resetPassword } from '@/services/authService';
 
@@ -40,8 +40,8 @@ export default function LoginPage() {
     try {
       await loginWithEmail(email, password);
       router.push('/dashboard');
-    } catch (err: any) {
-      const message = err?.message || 'Login failed';
+    } catch (err) {
+      const message = (err instanceof Error ? err.message : '') || 'Login failed';
       if (message.includes('Invalid login credentials')) {
         setError('Invalid email or password. Please try again.');
       } else if (message.includes('Email not confirmed')) {
@@ -68,8 +68,8 @@ export default function LoginPage() {
     try {
       await resetPassword(resetEmail);
       setResetSent(true);
-    } catch (err: any) {
-      setResetError(err?.message || 'Failed to send reset email. Please try again.');
+    } catch (err) {
+      setResetError((err instanceof Error ? err.message : '') || 'Failed to send reset email. Please try again.');
     } finally {
       setResetLoading(false);
     }

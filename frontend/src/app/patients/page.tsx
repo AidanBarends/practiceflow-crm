@@ -5,9 +5,6 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useRouter } from 'next/navigation';
 import {
   Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Filter,
   MoreHorizontal,
   Pencil,
   Phone,
@@ -435,7 +432,7 @@ export default function PatientDirectoryPage() {
                         </div>
                         <div className="text-gray-900 font-medium">No patients found</div>
                         <p className="text-gray-500 text-sm max-w-sm">
-                          We couldn't find any patient records matching your current filters and search query.
+                          We couldn&apos;t find any patient records matching your current filters and search query.
                         </p>
                         <button
                           onClick={clearFilters}

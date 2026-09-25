@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { availableLabs } from '@/data/mockLabs';
 
@@ -17,11 +17,8 @@ export default function AttachLabsModal({
   attachedLabIds,
   onSave,
 }: AttachLabsModalProps) {
+  // Parent mounts this modal only while open, so selection starts from the current labs each time
   const [selected, setSelected] = useState<string[]>(attachedLabIds);
-
-  useEffect(() => {
-    if (isOpen) setSelected(attachedLabIds);
-  }, [isOpen, attachedLabIds]);
 
   function toggleLab(id: string) {
     setSelected((prev) =>

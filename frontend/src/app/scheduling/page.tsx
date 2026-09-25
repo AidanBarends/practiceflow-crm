@@ -120,10 +120,6 @@ export default function SchedulingPage() {
     setCurrentDate(prev);
   };
 
-  const today = () => {
-    setCurrentDate(new Date());
-  };
-
   const getRelativeDateLabel = (date: Date) => {
     const today = new Date();
     const yesterday = new Date(today);
@@ -204,14 +200,16 @@ export default function SchedulingPage() {
         )}
       </div>
 
-      <AppointmentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveAppointment}
-        patients={patients}
-        staff={staff}
-        initialData={editingAppointment}
-      />
+      {isModalOpen && (
+        <AppointmentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveAppointment}
+          patients={patients}
+          staff={staff}
+          initialData={editingAppointment}
+        />
+      )}
     </AppShell>
     </ProtectedRoute>
   );

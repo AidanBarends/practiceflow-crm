@@ -34,8 +34,8 @@ export default function ResetPasswordPage() {
       await updatePassword(newPassword);
       setSuccess(true);
       setTimeout(() => router.push('/dashboard'), 2000);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to update password. Please try again.');
+    } catch (err) {
+      setError((err instanceof Error ? err.message : '') || 'Failed to update password. Please try again.');
     } finally {
       setIsLoading(false);
     }
