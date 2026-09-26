@@ -14,7 +14,7 @@ export default function NoteHeader({
   onTemplatesClick,
 }: NoteHeaderProps) {
   return (
-    <div className="mb-5 flex items-center justify-between border-b border-gray-100 pb-4">
+    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-4">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 shadow-sm">
           <FileText className="h-5 w-5 text-white" />

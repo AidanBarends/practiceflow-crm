@@ -22,7 +22,7 @@ export default function NoteFooter({
   onComplete,
 }: NoteFooterProps) {
   return (
-    <div className="mt-6 flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
+    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-gray-200 bg-white px-4 sm:px-5 py-4 shadow-sm">
       <div className="flex items-center gap-2 text-xs text-gray-400">
         <Save className="h-3.5 w-3.5" />
         {lastSavedAt ? (
@@ -31,7 +31,7 @@ export default function NoteFooter({
           <span>No changes yet</span>
         )}
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         {!canComplete && incompleteMessage && (
           <span role="status" className="text-xs font-medium text-amber-600">
             {incompleteMessage}

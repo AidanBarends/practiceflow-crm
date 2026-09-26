@@ -204,7 +204,7 @@ function ClinicalWorkspaceContent({ patientId }: { patientId: string | null }) {
       />
 
       {/* Session Info Bar */}
-      <div className="my-6 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white p-4 shadow-sm border border-slate-100 animate-slide-up">
+      <div className="my-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-3 sm:gap-4 rounded-xl bg-white p-4 shadow-sm border border-slate-100 animate-slide-up">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <Calendar className="h-4 w-4 text-teal-500" />

@@ -59,8 +59,8 @@ function EditableVital({ label, field, value, icon, onChange }: EditableVitalPro
 
 export default function PatientContextBar({ patient, vitals, onVitalsChange }: PatientContextBarProps) {
   return (
-    <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between">
+    <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         {/* Patient Info */}
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-lg font-bold text-white shadow-sm">
@@ -86,7 +86,7 @@ export default function PatientContextBar({ patient, vitals, onVitalsChange }: P
         </div>
 
         {/* Editable Vitals */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">
             Vitals <span className="normal-case font-normal">(click to edit)</span>
           </div>

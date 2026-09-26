@@ -54,7 +54,7 @@ export default function Sidebar() {
   });
 
   return (
-    <aside className="flex h-screen w-[260px] flex-shrink-0 flex-col bg-slate-900">
+    <aside className="hidden lg:flex h-screen w-[260px] flex-shrink-0 flex-col bg-slate-900">
       {/* Brand */}
       <div className="flex items-center justify-center px-5 pt-8 pb-6 border-b border-white/5">
         <Link href="/dashboard" className="flex items-center">
