@@ -2,6 +2,8 @@ import { Save, Eye, Trash2, CheckCircle } from 'lucide-react';
 
 interface NoteFooterProps {
   lastSavedAt: Date | null;
+  canComplete: boolean;
+  incompleteMessage: string;
   onDiscard: () => void;
   onPreview: () => void;
   onComplete: () => void;
@@ -13,6 +15,8 @@ function formatTime(date: Date): string {
 
 export default function NoteFooter({
   lastSavedAt,
+  canComplete,
+  incompleteMessage,
   onDiscard,
   onPreview,
   onComplete,
@@ -28,6 +32,11 @@ export default function NoteFooter({
         )}
       </div>
       <div className="flex items-center gap-3">
+        {!canComplete && incompleteMessage && (
+          <span role="status" className="text-xs font-medium text-amber-600">
+            {incompleteMessage}
+          </span>
+        )}
         <button
           onClick={onDiscard}
           className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors"
@@ -44,7 +53,9 @@ export default function NoteFooter({
         </button>
         <button
           onClick={onComplete}
-          className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:from-teal-700 hover:to-emerald-700 transition-all"
+          disabled={!canComplete}
+          title={canComplete ? undefined : incompleteMessage}
+          className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:from-teal-700 hover:to-emerald-700 transition-all disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:from-teal-600 disabled:hover:to-emerald-600"
         >
           <CheckCircle className="h-3.5 w-3.5" />
           Complete Encounter

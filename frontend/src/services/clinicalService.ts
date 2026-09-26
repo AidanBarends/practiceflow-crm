@@ -17,7 +17,31 @@ export interface ClinicalNoteRecord {
   plan: string;
 }
 
+// An encounter can't be finalised without a diagnosis and a treatment plan.
+// Whitespace-only text counts as empty.
+const requiredSections: { key: keyof SoapNote; label: string }[] = [
+  { key: 'assessment', label: 'Assessment' },
+  { key: 'plan', label: 'Plan' },
+];
+
+export function getMissingRequiredSections(note: SoapNote): string[] {
+  return requiredSections
+    .filter(({ key }) => note[key].trim() === '')
+    .map(({ label }) => label);
+}
+
+export function getIncompleteNoteMessage(missing: string[]): string {
+  if (missing.length === 0) return '';
+  return `${missing.join(' and ')} must be completed before finalising.`;
+}
+
 export async function saveClinicalNote(params: SaveClinicalNoteParams): Promise<boolean> {
+  // Guard here too, so an incomplete note can't be saved even if the UI check is bypassed.
+  if (getMissingRequiredSections(params.note).length > 0) {
+    console.warn('Refusing to save clinical note: required sections are empty.');
+    return false;
+  }
+
   if (isSupabaseConfigured && supabase) {
     try {
       const { error } = await supabase.from('clinical_notes').insert({

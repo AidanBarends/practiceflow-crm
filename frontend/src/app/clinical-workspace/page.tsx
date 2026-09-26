@@ -20,6 +20,8 @@ import {
   saveClinicalNote,
   getClinicalPatient,
   getPatientClinicalHistory,
+  getMissingRequiredSections,
+  getIncompleteNoteMessage,
   ClinicalNoteRecord,
 } from '@/services/clinicalService';
 import { useToast } from '@/components/ui/Toast';
@@ -85,6 +87,8 @@ function ClinicalWorkspaceContent({ patientId }: { patientId: string | null }) {
   };
 
   const lastSavedAt = useAutoSave(note);
+  const missingSections = getMissingRequiredSections(note);
+  const canComplete = missingSections.length === 0;
 
   function updateNoteField(key: keyof SoapNote, value: string) {
     setNote((prev) => ({ ...prev, [key]: value }));
@@ -103,7 +107,7 @@ function ClinicalWorkspaceContent({ patientId }: { patientId: string | null }) {
   }
 
   async function handleConfirmComplete() {
-    if (!patient) return;
+    if (!patient || !canComplete) return;
     setIsCompleting(true);
     const saved = await saveClinicalNote({
       patientId: patient.id,
@@ -242,6 +246,8 @@ function ClinicalWorkspaceContent({ patientId }: { patientId: string | null }) {
 
       <NoteFooter
         lastSavedAt={lastSavedAt}
+        canComplete={canComplete}
+        incompleteMessage={getIncompleteNoteMessage(missingSections)}
         onDiscard={() => setIsDiscardConfirmOpen(true)}
         onPreview={() => setIsPreviewOpen(true)}
         onComplete={() => setIsCompleteConfirmOpen(true)}
