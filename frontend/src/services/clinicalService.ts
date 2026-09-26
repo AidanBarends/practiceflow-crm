@@ -64,7 +64,9 @@ export async function saveClinicalNote(params: SaveClinicalNoteParams): Promise<
       return false;
     }
   }
-  return true;
+  // No database connection. Nothing was saved, so do not report success.
+  console.warn('Cannot save clinical note: database is not configured.');
+  return false;
 }
 
 export async function getPatientClinicalHistory(patientId: string): Promise<ClinicalNoteRecord[]> {
